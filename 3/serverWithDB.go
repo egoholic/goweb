@@ -29,12 +29,12 @@ type Page struct {
 
 func ServePage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	pageID := vars["id"]
+	pageGUID := vars["guid"]
 	thisPage := Page{}
-	fmt.Println(pageID)
-	err := database.QueryRow("SELECT page_title, page_content, page_date FROM pages WHERE id=?", pageID).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
+	fmt.Println(pageGUID)
+	err := database.QueryRow("SELECT page_title, page_content, page_date FROM pages WHERE page_guid=?", pageGUID).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
 	if err != nil {
-		log.Println("Could not get page:", pageID)
+		log.Println("Could not get page:", pageGUID)
 		log.Println(err.Error())
 	}
 
@@ -54,7 +54,7 @@ func main() {
 	}
 	database = db
 	routes := mux.NewRouter()
-	routes.HandleFunc("/page/{id:[0-9]+}", ServePage)
+	routes.HandleFunc("/page/{guid:[0-9a-zA\\-]+}", ServePage)
 	http.Handle("/", routes)
 	http.ListenAndServe(PORT, nil)
 }
