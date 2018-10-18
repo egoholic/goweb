@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 
@@ -22,9 +23,10 @@ const (
 var database *sql.DB
 
 type Page struct {
-	Title   string
-	Content string
-	Date    string
+	Title      string
+	RawContent string
+	Content    template.HTML
+	Date       string
 }
 
 func ServePage(w http.ResponseWriter, r *http.Request) {
@@ -32,13 +34,18 @@ func ServePage(w http.ResponseWriter, r *http.Request) {
 	pageGUID := vars["guid"]
 	thisPage := Page{}
 	fmt.Println(pageGUID)
-	err := database.QueryRow("SELECT page_title, page_content, page_date FROM pages WHERE page_guid=?", pageGUID).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
+	err := database.QueryRow("SELECT page_title, page_content, page_date FROM pages WHERE page_guid=?", pageGUID).Scan(&thisPage.Title, &thisPage.RawContent, &thisPage.Date)
 	if err != nil {
 		http.Error(w, http.StatusText(404), http.StatusNotFound)
 		log.Println("Could not get page:", pageGUID)
 	} else {
-		html := `<html><head><title>` + thisPage.Title + `</title></head><body><h1>` + thisPage.Title + `</h1><div>` + thisPage.Content + `</div></body></html>`
-		fmt.Fprintln(w, html)
+		thisPage.Content = template.HTML(thisPage.RawContent)
+		template, err := template.ParseFiles("./templates/page.html")
+		if err != nil {
+			log.Println(err.Error())
+		} else {
+			template.Execute(w, thisPage)
+		}
 	}
 }
 
