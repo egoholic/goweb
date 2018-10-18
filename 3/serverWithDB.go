@@ -34,13 +34,12 @@ func ServePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(pageGUID)
 	err := database.QueryRow("SELECT page_title, page_content, page_date FROM pages WHERE page_guid=?", pageGUID).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
 	if err != nil {
+		http.Error(w, http.StatusText(404), http.StatusNotFound)
 		log.Println("Could not get page:", pageGUID)
-		log.Println(err.Error())
+	} else {
+		html := `<html><head><title>` + thisPage.Title + `</title></head><body><h1>` + thisPage.Title + `</h1><div>` + thisPage.Content + `</div></body></html>`
+		fmt.Fprintln(w, html)
 	}
-
-	html := `<html><head><title>` + thisPage.Title + `</title></head><body><h1>` + thisPage.Title + `</h1><div>` + thisPage.Content + `</div></body></html>`
-
-	fmt.Fprintln(w, html)
 }
 
 func main() {
