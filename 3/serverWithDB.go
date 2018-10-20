@@ -27,14 +27,15 @@ type Page struct {
 	RawContent string
 	Content    template.HTML
 	Date       string
+	GUID       string
 }
 
-func ServePage(w http.ResponseWriter, r *http.Request) {
+func servePage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pageGUID := vars["guid"]
 	thisPage := Page{}
 	fmt.Println(pageGUID)
-	err := database.QueryRow("SELECT page_title, page_content, page_date FROM pages WHERE page_guid=?", pageGUID).Scan(&thisPage.Title, &thisPage.RawContent, &thisPage.Date)
+	err := database.QueryRow("SELECT page_guid, page_title, page_content, page_date FROM pages WHERE page_guid=?", pageGUID).Scan(&thisPage.GUID, &thisPage.Title, &thisPage.RawContent, &thisPage.Date)
 	if err != nil {
 		http.Error(w, http.StatusText(404), http.StatusNotFound)
 		log.Println("Could not get page:", pageGUID)
@@ -49,6 +50,27 @@ func ServePage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func redirIndex(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/home", 301)
+}
+
+func serveIndex(w http.ResponseWriter, r *http.Request) {
+	Pages := []Page{}
+	pages, err := database.Query("SELECT page_guid, page_title, page_content, page_date FROM pages ORDER BY ? DESC", "page_date")
+	if err != nil {
+		fmt.Fprintln(w, err.Error())
+	}
+	defer pages.Close()
+	for pages.Next() {
+		thisPage := Page{}
+		pages.Scan(&thisPage.GUID, &thisPage.Title, &thisPage.RawContent, &thisPage.Date)
+		thisPage.Content = template.HTML(thisPage.RawContent)
+		Pages = append(Pages, thisPage)
+	}
+	t, _ := template.ParseFiles("templates/index.html")
+	t.Execute(w, Pages)
+}
+
 func main() {
 	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s", DBUser, DBPass, DBHost, DBDbase)
 	fmt.Println(dbConn)
@@ -60,7 +82,9 @@ func main() {
 	}
 	database = db
 	routes := mux.NewRouter()
-	routes.HandleFunc("/page/{guid:[0-9a-zA\\-]+}", ServePage)
+	routes.HandleFunc("/page/{guid:[0-9a-zA\\-]+}", servePage)
+	routes.HandleFunc("/", redirIndex)
+	routes.HandleFunc("/home", serveIndex)
 	http.Handle("/", routes)
 	http.ListenAndServe(PORT, nil)
 }

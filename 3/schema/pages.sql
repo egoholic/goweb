@@ -12,3 +12,4 @@ CREATE TABLE `pages` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
 INSERT INTO `pages` (`id`, `page_guid`, `page_title`, `page_content`, `page_date`) VALUES (NULL, 'hello-world', 'Hello, World!', 'Hey! How are you doin?', CURRENT_TIMESTAMP);
+INSERT INTO `pages` (`id`, `page_guid`, `page_title`, `page_content`, `page_date`) VALUES (NULL, 'cool', 'Cool!', 'Really cool!', CURRENT_TIMESTAMP);
