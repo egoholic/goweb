@@ -13,3 +13,4 @@ CREATE TABLE `pages` (
 
 INSERT INTO `pages` (`id`, `page_guid`, `page_title`, `page_content`, `page_date`) VALUES (NULL, 'hello-world', 'Hello, World!', 'Hey! How are you doin?', CURRENT_TIMESTAMP);
 INSERT INTO `pages` (`id`, `page_guid`, `page_title`, `page_content`, `page_date`) VALUES (NULL, 'cool', 'Cool!', 'Really cool!', CURRENT_TIMESTAMP);
+INSERT INTO `pages` (`id`, `page_guid`, `page_title`, `page_content`, `page_date`) VALUES (NULL, 'long-long', 'Long-long long long long!', 'Really cool and long, very-very-very long. Too long! Very-very long! Longer then everything else!', CURRENT_TIMESTAMP);

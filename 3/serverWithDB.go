@@ -30,6 +30,14 @@ type Page struct {
 	GUID       string
 }
 
+func (p *Page) ContentPreview() template.HTML {
+	if len(p.Content) <= 30 {
+		return p.Content
+	}
+
+	return p.Content[0:27] + "..."
+}
+
 func servePage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pageGUID := vars["guid"]
